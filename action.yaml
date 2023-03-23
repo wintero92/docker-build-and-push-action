@@ -1,0 +1,82 @@
+name: Docker build and push
+description: Build docker image and publish it.
+
+inputs:
+  GITHUB_TOKEN:
+    description: "GITHUB_TOKEN with write for packages."
+    required: false
+
+  REGISTRY:
+    description: "Docker images registry."
+    default: ghcr.io
+    required: true
+
+  REGISTRY_USERNAME:
+    description: "Registry username."
+    default: ${{github.actor}}
+    required: true
+
+  PACKAGE_NAME:
+    description: "Organization/name."
+    default: ${{github.repository}}
+    required: true
+
+  FIRST_TAG:
+    description: "Tag for docker image."
+    required: false
+    default: ""
+
+  SECOND_TAG:
+    description: "Tag for docker image."
+    required: false
+    default: ""
+
+  THIRD_TAG:
+    description: "Tag for docker image."
+    required: false
+    default: ""
+
+  TARGET:
+    description: "Build target."
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Login to Docker registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{inputs.REGISTRY}}
+        username: ${{inputs.REGISTRY_USERNAME}}
+        password: ${{inputs.GITHUB_TOKEN}}
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+      with:
+        platforms: linux/amd64
+
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{inputs.REGISTRY}}/${{inputs.PACKAGE_NAME}}
+        tags: |
+          type=raw,value=${{inputs.FIRST_TAG}}
+          type=raw,value=${{inputs.SECOND_TAG}}
+          type=raw,value=${{inputs.THIRD_TAG}}
+
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        provenance: false
+        push: true
+        tags: ${{steps.meta.outputs.tags}}
+        labels: ${{steps.meta.outputs.labels}}
+        build-args: |
+          GITHUB_TOKEN=${{inputs.GITHUB_TOKEN}}
+        target: ${{inputs.TARGET}}
