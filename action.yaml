@@ -39,6 +39,10 @@ inputs:
   TARGET:
     description: "Build target."
     required: true
+    
+  BUILD_ARGS:
+    description: "Build arguments."
+    required: true
 
 runs:
   using: "composite"
@@ -77,6 +81,5 @@ runs:
         push: true
         tags: ${{steps.meta.outputs.tags}}
         labels: ${{steps.meta.outputs.labels}}
-        build-args: |
-          GITHUB_TOKEN=${{inputs.GITHUB_TOKEN}}
+        build-args: ${{inputs.BUILD_ARGS}}
         target: ${{inputs.TARGET}}
