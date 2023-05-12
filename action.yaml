@@ -44,6 +44,11 @@ inputs:
     description: "Build arguments."
     required: true
 
+  PUSH:
+    description: "Either push or not."
+    default: "true"
+    required: false
+
 runs:
   using: "composite"
 
@@ -78,7 +83,7 @@ runs:
       with:
         context: .
         provenance: false
-        push: true
+        push: ${{inputs.PUSH}}
         tags: ${{steps.meta.outputs.tags}}
         labels: ${{steps.meta.outputs.labels}}
         build-args: ${{inputs.BUILD_ARGS}}
